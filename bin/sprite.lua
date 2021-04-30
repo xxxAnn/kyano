@@ -1,5 +1,5 @@
-local class = require("bin.class")
-local Sprite, _ = class("Sprite")
+local Sprite = require("bin.class")("Sprite")
+
 Sprite.sprites = {}
 
 function Sprite:__init(sprite, sx, sy, visible, x, y, r)
@@ -27,6 +27,7 @@ function Sprite:draw_all()
     end
 end
 
+local Tile, _ = require("bin.class")("Tile", Sprite)
 
 
-return Sprite
+return {tile = Tile, sprite = Sprite}

@@ -43,7 +43,7 @@ function metadata:__call(...)
 end
 
 function metadata:__newindex(k, v)
-    if not k:startswith("__") then
+    if not k:startswith("__")  then
         print('Adding native property ' .. k ..' to Class ' .. self.__name)
     end
     rawset(self, k, v)
@@ -51,15 +51,17 @@ end
 
 function inherit(child, ancestor, inherited)
     for k1, v1 in pairs(ancestor) do
-        if not k1:startswith("__") then
+        if not k1:startswith("__") or k1 == "__init" then
             print('Adding inherited property ' .. k1 .. ' from ancestor ' .. ancestor.__name)
             inherited[k1] = v1
+            rawset(child, k1, v1)
         end
     end
     for k2, v2 in pairs(ancestor.__inherited) do
-        if not k2:startswith("__") then
+        if not k2:startswith("__") or k2 == "__init" then
             print('Adding inherited property ' .. k2 .. ' from ancestor ' .. ancestor.__name)
             inherited[k2] = v2
+            rawset(child, k2, v2)
         end
     end
     ancestors = {}
@@ -91,7 +93,7 @@ return setmetatable({},
             Inherited attributes are attributes that are inherited from the parent
             They are always the last ones to be fetched
         ADDED:
-            Added attributes are attributes taht are added after the initialization of the class
+            Added attributes are attributes that are added after the initialization of the class
             They are always the second ones fetched when searching for an attribute
         GETTER:
             Functions that have been added to the getter dictionary returned from this module
@@ -105,7 +107,7 @@ return setmetatable({},
         local ancestors = {}
         --[[
         **INHERITANCE**
-        All native and inherited attributes from parent class are transfered to this class as inherited attributes
+        All native and inherited attributes from parent class are transferred to this class as inherited attributes
         ]]--
         if parents then
             for _, v in pairs(parents) do
@@ -118,17 +120,16 @@ return setmetatable({},
         and automatically get called by __index
         ]]--
         function class:__index(k)
+            -- Checks if INDEX exists
             if k ~= "__init" then
                 if rawget(class, "INDEX") then return rawget(class, "INDEX")(self, cls, k) end
                 if inherited["INDEX"] then return inherited.INDEX(self, cls, k) end
             end
+            -- Checks if this attribute is handled by the getter
             if getter[k] then return getter[k](self) end
-            if dict[k] ~= nil then
-                return dict[k]
-            elseif rawget(class, k) ~= nil then
+            -- Tries to check if the table has the attribute
+            if rawget(class, k) ~= nil then
                 return rawget(class, k)
-            elseif inherited[k] ~= nil then
-                return inherited[k]
             end
             return nil
         end
@@ -144,29 +145,6 @@ return setmetatable({},
             return rawset(self, k, v)
         end
         --[[
-        **THE DICT**
-
-        The dict table is a table containing all of the added attributes to a Class
-        This includes all attributes added after initialization
-        -->> THOSE ATTRIBUTES ARE ALWAYS FETCHED **BEFORE** NATIVE AND INHERITED ATTRIBUTES <<--
-        As such adding anything to that table will overwrite the native attribute
-        For Example:
-        Imagine an object with a native "happy" attribute set to true
-        print(object.happy)
-        >> true
-        If we were to then do object.happy = false then
-        print(object)
-        >> false
-        However if we do object.happy = nil then
-        print(object.happy)
-        >> true
-        Because it went back to the native attribute
-        ]]--
-        class.__dict = dict
-        class.__inherited = inherited
-        class.__ancestors = ancestors
-        class.__name = name
-        --[[
         **THE GETTER**
         any function added to the getter table will be called when trying to access an attribute
         Example:
@@ -176,6 +154,8 @@ return setmetatable({},
             end
         This, put simply, transform a call of object:_name() to object.name
         ]]--
+        class.__inherited = inherited
+        class.__name = name
         class.__getter = getter
         names[name] = class
         print('------------------------\n')
