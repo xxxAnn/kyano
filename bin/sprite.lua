@@ -26,15 +26,15 @@ end
 
 function Sprite:draw_all()
     if self.init == false then error("Tried drawing without initializing sprites") end
-    for i, layer in ipairs(self.lytable) do
-        for j, sprite in ipairs(layer) do
+    for _, layer in ipairs(self.lytable) do
+        for _, sprite in ipairs(layer) do
             sprite:draw()
         end
     end
 end
 
 function Sprite:start()
-    for i, sprite in ipairs(self.sprites) do
+    for _, sprite in ipairs(self.sprites) do
         if self.lytable[sprite.layer] == nil then self.lytable[sprite.layer] = {sprite} else
         table.insert(self.lytable[sprite.layer], sprite) end
     end
