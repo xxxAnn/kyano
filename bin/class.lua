@@ -49,25 +49,13 @@ function metadata:__newindex(k, v)
     rawset(self, k, v)
 end
 
-function inherit(child, ancestor, inherited)
+function inherit(child, ancestor)
     for k1, v1 in pairs(ancestor) do
         if not k1:startswith("__") or k1 == "__init" then
             print('Adding inherited property ' .. k1 .. ' from ancestor ' .. ancestor.__name)
-            inherited[k1] = v1
             rawset(child, k1, v1)
         end
     end
-    for k2, v2 in pairs(ancestor.__inherited) do
-        if not k2:startswith("__") or k2 == "__init" then
-            print('Adding inherited property ' .. k2 .. ' from ancestor ' .. ancestor.__name)
-            inherited[k2] = v2
-            rawset(child, k2, v2)
-        end
-    end
-    ancestors = {}
-    table.insert(ancestors, ancestor)
-    table.insert(ancestors, ancestor.__ancestors)
-    return ancestors
 end
 
 return setmetatable({},
@@ -79,39 +67,15 @@ return setmetatable({},
         local parents = { ... }
         parents.n = nil
 
-
-        --[[
-        **ATTRIBUTE TYPES**
-
-        There are four different attribute types; NATIVE, INHERITED, ADDED and GETTER
-        NATIVE:
-            Native attributes are attributes that are added when creating the class
-            after using the implementation provided here. They are the 3rd to be fetched
-            when searching for an attribute
-
-        INHERITED:
-            Inherited attributes are attributes that are inherited from the parent
-            They are always the last ones to be fetched
-        ADDED:
-            Added attributes are attributes that are added after the initialization of the class
-            They are always the second ones fetched when searching for an attribute
-        GETTER:
-            Functions that have been added to the getter dictionary returned from this module
-            They are the first one fetched when searching an attribute and are automatically called
-            with the cls attribute
-        ]]--
         local class = setmetatable({}, metadata)
-        local dict = {}
-        local inherited = {}
         local getter = {}
-        local ancestors = {}
         --[[
         **INHERITANCE**
-        All native and inherited attributes from parent class are transferred to this class as inherited attributes
+        All attributes from parent class are transferred to this class
         ]]--
         if parents then
             for _, v in pairs(parents) do
-                inherit(class, v, inherited)
+                inherit(class, v)
             end
         end
         --[[
@@ -123,7 +87,6 @@ return setmetatable({},
             -- Checks if INDEX exists
             if k ~= "__init" then
                 if rawget(class, "INDEX") then return rawget(class, "INDEX")(self, cls, k) end
-                if inherited["INDEX"] then return inherited.INDEX(self, cls, k) end
             end
             -- Checks if this attribute is handled by the getter
             if getter[k] then return getter[k](self) end
@@ -141,7 +104,6 @@ return setmetatable({},
         ]]--
         function class:__newindex(k, v)
             if rawget(class, "NEWINDEX") then return rawget(class, "NEWINDEX")(self, cls, k) end
-            if inherited["NEWINDEX"] then return inherited.NEWINDEX(self, cls, k) end
             return rawset(self, k, v)
         end
         --[[
@@ -154,7 +116,6 @@ return setmetatable({},
             end
         This, put simply, transform a call of object:_name() to object.name
         ]]--
-        class.__inherited = inherited
         class.__name = name
         class.__getter = getter
         names[name] = class
