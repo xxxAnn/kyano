@@ -4,11 +4,11 @@ local load_3x3_terrain = require("bin.load_terrain.3x3arena")
 
 function love.load()
     -- Start game handler here (Load main menu etc.)
-    SpriteMod.sprite:start() -- Nothing past this point, this should be the last call in love.load()
+    SpriteMod.sprite:__start() -- Nothing past this point, this should be the last call in love.load()
 end
 
 function love.draw()
-    SpriteMod.sprite:draw_all()
+    SpriteMod.sprite:__draw_all()
 end
 
 function love.update( dt )
