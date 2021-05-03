@@ -38,13 +38,13 @@ end
 
 function metadata:__call(...)
     local obj = setmetatable({}, self)
-    obj:__init(...)
+    obj:INIT(...)
     return obj
 end
 
 function metadata:__newindex(k, v)
     if not k:startswith("__")  then
-        print('Adding native property ' .. k ..' to Class ' .. self.__name)
+        print('Adding inheritable property ' .. k ..' to Class ' .. self.__name)
     end
     rawset(self, k, v)
 end
@@ -77,7 +77,7 @@ return setmetatable({},
 
         function class:__index(k)
             -- Checks if INDEX exists
-            if k ~= "__init" then
+            if k ~= "INIT" then
                 if rawget(class, "INDEX") then return rawget(class, "INDEX")(self, cls, k) end
             end
             -- Checks if this attribute is handled by the getter
