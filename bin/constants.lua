@@ -1,17 +1,14 @@
---[[ Naming: a.b
--> a is the type of variable "IMGP" stands for Image Path, "C" stands for Config ..
+--[[ Naming Standard: a_b
+-> a is the type of variable -> "IMGP" stands for Image Path, "C" stands for Config ..
 -> b is the unique identifier of the variable.
-
 --]]
 local consts = {
     IMGP_BASIC = "assets/default.png", -- todo: replace static value with value pulled from XML file.
     IMGP_BACKGROUND =  "assets/background_tile.png",
-    height = 800,
-    width = 1000,
+    IMGP_START_BUTTON = "assets/start_button.png",
+    C_WINDOW_HEIGHT = 800,
+    C_WINDOW_WIDTH = 1000,
     -- ..
-    __call = function ()
-        -- todo: reload constants from XML file.
-    end
 }
 
 return consts
