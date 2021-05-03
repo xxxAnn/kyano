@@ -1,8 +1,10 @@
 local Sprite = require("bin.class")("Sprite")
 
-Sprite.sprites = {}
+Sprite.__sprites = {}
+Sprite.__started = false
+Sprite.__lytable = {}
 
-function Sprite:__init(sprite, sx, sy, visible, x, y, r)
+function Sprite:INIT(sprite, sx, sy, visible, x, y, r, ly)
     -- Add attributes
     self.sprite = sprite
     self.x = x or 0
@@ -11,8 +13,18 @@ function Sprite:__init(sprite, sx, sy, visible, x, y, r)
     self.scale_y = sy or 1
     self.rotation = r or 0
     self.visible = ( visible == nil and true) or visible
-    table.insert(Sprite.sprites, self)
+    self.layer = 1 or ly
+    table.insert(Sprite.__sprites, self)
     return self
+end
+
+--[[
+Approximates the hitbox of the sprite
+A more precise approximation can be given by replacing this default implementation
+]]--
+function Sprite:get_box()
+    local width, height = self.sprite:getPixelDimensions()
+    return {x = self.x, y = self.y}, {x = self.x+width, y = self.y+height}
 end
 
 function Sprite:draw()
@@ -21,10 +33,23 @@ function Sprite:draw()
     end
 end
 
-function Sprite:draw_all()
-    for i, sprite in ipairs(self.sprites) do
-        sprite:draw()
+
+
+function Sprite:__draw_all()
+    if self.__started == false then error("Tried drawing without initializing sprites") end
+    for _, layer in ipairs(self.__lytable) do
+        for _, sprite in ipairs(layer) do
+            sprite:draw()
+        end
     end
+end
+
+function Sprite:__start()
+    for _, sprite in ipairs(self.__sprites) do
+        if self.__lytable[sprite.layer] == nil then self.lytable[sprite.layer] = {sprite} else
+        table.insert(self.__lytable[sprite.layer], sprite) end
+    end
+    self.__started = true
 end
 
 local Tile, _ = require("bin.class")("Tile", Sprite)
