@@ -24,7 +24,7 @@ local names = {}
 local __printer = print
 
 -- Toggle for the print function
-local debugMode = true
+local debugMode = false
 
 function print(...)
     if debugMode then
@@ -69,20 +69,12 @@ return setmetatable({},
 
         local class = setmetatable({}, metadata)
         local getter = {}
-        --[[
-        **INHERITANCE**
-        All attributes from parent class are transferred to this class
-        ]]--
         if parents then
             for _, v in pairs(parents) do
                 inherit(class, v)
             end
         end
-        --[[
-        **INDEX**
-        Adding an INDEX method to your class will overpower the default implementation below
-        and automatically get called by __index
-        ]]--
+
         function class:__index(k)
             -- Checks if INDEX exists
             if k ~= "__init" then
@@ -97,11 +89,6 @@ return setmetatable({},
             return nil
         end
 
-        --[[
-        **NEWINDEX**
-        Adding an NEWINDEX method to your class will overpower the default implementation below
-        and automatically get called by __newindex
-        ]]--
         function class:__newindex(k, v)
             if rawget(class, "NEWINDEX") then return rawget(class, "NEWINDEX")(self, cls, k) end
             return rawset(self, k, v)
