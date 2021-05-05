@@ -1,6 +1,6 @@
 local constants = require("bin.constants")
 local SpriteMod = require("bin.sprite")
-local load_3x3_terrain = require("bin.load_terrain.3x3arena")
+local load_arena = require("bin.background.arena")
 
 function love.load()
     -- Start game handler here (Load main menu etc.)
