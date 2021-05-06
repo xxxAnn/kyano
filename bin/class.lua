@@ -17,20 +17,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ]]--
-
+local logger = require("bin.utils.logs")
 
 local metadata = {}
 local names = {}
-local __printer = print
-
--- Toggle for the print function
-local debugMode = false
-
-local function print(...)
-    if debugMode then
-        __printer(...)
-    end
-end
 
 string.startswith = function(self, str)
     return self:find('^' .. str) ~= nil
@@ -45,11 +35,11 @@ end
 
 function metadata.__newindex(class, k, v)
     if not k:startswith("__")  then
-        print('Adding inheritable property ' .. k ..' to Class ' .. class.__name)
+        logger.info('Adding inheritable property ' .. k ..' to Class ' .. class.__name)
         class.__dict[k] = v
     else
         local x = class.__name == nil and "Unnamed" or class.__name
-        print("Adding non-inheritable property " .. k .. " to Class " .. x)
+        logger.info("Adding non-inheritable property " .. k .. " to Class " .. x)
         rawset(class, k ,v)
     end
 end
@@ -57,7 +47,7 @@ end
 function inherit(child, ancestor) -- ancestor is a class
     for k1, v1 in pairs(ancestor.__dict) do
         if not k1:startswith("__") or k1 == "__init" then
-            print('Adding inherited property ' .. k1 .. ' from ancestor ' .. ancestor.__name)
+            logger.info('Adding inherited property ' .. k1 .. ' from ancestor ' .. ancestor.__name)
             child.__dict[k1] = v1
         end
     end
@@ -67,8 +57,7 @@ return setmetatable({},
     {__call =
     function(_, name, ...)
         if names[name] ~= nil then return names[name] end -- Returns the class if it was already loaded
-        print('\n--- Generating Class ---')
-        print(name)
+        logger.info('Attempting to create class ' .. name)
         local parents = { ... }
         parents.n = nil
 
@@ -111,6 +100,5 @@ return setmetatable({},
         ]]--
         class.__getter = getter
         names[name] = class
-        print('------------------------\n')
         return class, getter
     end})

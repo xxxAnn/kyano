@@ -8,6 +8,7 @@ local consts = {
     IMGP_START_BUTTON = "assets/start_button.png",
     C_WINDOW_HEIGHT = 400,
     C_WINDOW_WIDTH = 750,
+    C_DEBUG = true,
     -- ..
 }
 

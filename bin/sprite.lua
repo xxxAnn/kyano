@@ -1,4 +1,5 @@
 local Sprite = require("bin.class")("Sprite")
+local logger = require("bin.utils.logs")
 
 Sprite.__sprites = {}
 Sprite.__started = false
@@ -40,7 +41,10 @@ function Sprite:draw()
 end
 
 function Sprite:__draw_all()
-    if self.__started == false then error("Tried drawing without initializing sprites") end
+    if self.__started == false then
+        logger.warning("Tried drawing without initializing sprites")
+        return -- Accept as valid code // Might not be safe however
+    end
     for _, layer in ipairs(self.__lytable) do
         for _, sprite in ipairs(layer) do
             sprite:draw()
