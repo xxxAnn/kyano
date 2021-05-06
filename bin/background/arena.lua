@@ -1,6 +1,6 @@
 local create_background = require("bin.background.create")
 local constants = require("bin.constants")
-local clean = require("bin.background.create")
+local clean = require("bin.background.clean")
 
 --[[
 Simple wrapper for cleaning, then loading the image and creating an arena of the desired size.
