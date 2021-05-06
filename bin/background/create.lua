@@ -1,4 +1,4 @@
-local SpriteMod = require("bin.sprite")
+local Tile = require("bin.etc.tile")
 local constants = require("bin.constants")
 
 local function create_background(img, size_x, size_y, amount_x, amount_y)
@@ -11,7 +11,7 @@ local function create_background(img, size_x, size_y, amount_x, amount_y)
 
     for i = 0, amount_x-1 do
         for j = 0, amount_y-1 do
-            local background_tile = SpriteMod.tile(img)
+            local background_tile = Tile(img)
             background_tile.x = (margin_left+(unit_size_x*i))
             background_tile.y = (margin_top+(unit_size_x*j))
             background_tile.scale_x = unit_size_x/250
