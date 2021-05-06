@@ -29,7 +29,7 @@ end
 function metadata.__call(class, ...)
     local instance = setmetatable({}, self)
     for k, v in pairs(class.__dict) do instance[k] = v end --
-    instance:INIT(...)
+    if instance.INIT ~= nil then instance:INIT(...) end
     return instance
 end
 
