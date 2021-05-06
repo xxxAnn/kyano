@@ -91,7 +91,7 @@ return setmetatable({},
             >> foo!
             local instanceOfClass2 = class2()
             instanceOfClass2.foo
-            >> 'foo!'
+            >> foo!
         ]]--
         if parents then
             for _, v in pairs(parents) do
