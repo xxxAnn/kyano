@@ -1,5 +1,5 @@
-local Sprite = require("bin.sprite")
+local SpriteMod = require("bin.sprite")
 
 return function ()
-    Sprite.__sprites = {}
+    SpriteMod.sprite.sprites = {}
 end
