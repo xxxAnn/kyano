@@ -3,6 +3,11 @@ local Sprite = require("bin.class")("Sprite")
 Sprite.__sprites = {}
 Sprite.__started = false
 Sprite.__lytable = {}
+Sprite.__buttons = {}
+--[[
+Placeholder//
+]]--
+Sprite.type = "default"
 
 function Sprite:INIT(sprite, sx, sy, visible, x, y, r, ly)
     -- Add attributes
@@ -15,6 +20,7 @@ function Sprite:INIT(sprite, sx, sy, visible, x, y, r, ly)
     self.visible = ( visible == nil and true) or visible
     self.layer = 1 or ly
     table.insert(Sprite.__sprites, self)
+    if self.type == "button" then table.insert(Sprite.__buttons, self) end
     return self
 end
 
@@ -33,8 +39,6 @@ function Sprite:draw()
     end
 end
 
-
-
 function Sprite:__draw_all()
     if self.__started == false then error("Tried drawing without initializing sprites") end
     for _, layer in ipairs(self.__lytable) do
@@ -46,13 +50,10 @@ end
 
 function Sprite:__start()
     for _, sprite in ipairs(self.__sprites) do
-        if self.__lytable[sprite.layer] == nil then self.lytable[sprite.layer] = {sprite} else
+        if self.__lytable[sprite.layer] == nil then self.__lytable[sprite.layer] = {sprite} else
         table.insert(self.__lytable[sprite.layer], sprite) end
     end
     self.__started = true
 end
 
-local Tile, _ = require("bin.class")("Tile", Sprite)
-
-
-return {tile = Tile, sprite = Sprite}
+return Sprite

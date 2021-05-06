@@ -2,7 +2,7 @@
 MIT License
 Copyright (c) 2020 Kyando
 Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
+this file and associated documentation files (the "Software"), to deal in
 the Software without restriction, including without limitation the rights to
 use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
 of the Software, and to permit persons to whom the Software is furnished to do
@@ -26,7 +26,7 @@ local __printer = print
 -- Toggle for the print function
 local debugMode = false
 
-function print(...)
+local function print(...)
     if debugMode then
         __printer(...)
     end
@@ -36,24 +36,29 @@ string.startswith = function(self, str)
     return self:find('^' .. str) ~= nil
 end
 
-function metadata:__call(...)
-    local obj = setmetatable({}, self)
-    obj:INIT(...)
-    return obj
+function metadata.__call(class, ...)
+    local instance = setmetatable({}, self)
+    for k, v in pairs(class.__dict) do instance[k] = v end --
+    instance:INIT(...)
+    return instance
 end
 
-function metadata:__newindex(k, v)
+function metadata.__newindex(class, k, v)
     if not k:startswith("__")  then
-        print('Adding inheritable property ' .. k ..' to Class ' .. self.__name)
+        print('Adding inheritable property ' .. k ..' to Class ' .. class.__name)
+        class.__dict[k] = v
+    else
+        local x = class.__name == nil and "Unnamed" or class.__name
+        print("Adding non-inheritable property " .. k .. " to Class " .. x)
+        rawset(class, k ,v)
     end
-    rawset(self, k, v)
 end
 
-function inherit(child, ancestor)
-    for k1, v1 in pairs(ancestor) do
+function inherit(child, ancestor) -- ancestor is a class
+    for k1, v1 in pairs(ancestor.__dict) do
         if not k1:startswith("__") or k1 == "__init" then
             print('Adding inherited property ' .. k1 .. ' from ancestor ' .. ancestor.__name)
-            rawset(child, k1, v1)
+            child.__dict[k1] = v1
         end
     end
 end
@@ -67,7 +72,8 @@ return setmetatable({},
         local parents = { ... }
         parents.n = nil
 
-        local class = setmetatable({}, metadata)
+        local class = setmetatable({__name = name}, metadata)
+        class.__dict = { }
         local getter = {}
         if parents then
             for _, v in pairs(parents) do
@@ -75,7 +81,7 @@ return setmetatable({},
             end
         end
 
-        function class:__index(k)
+        function class.__index(instance, k)
             -- Checks if INDEX exists
             if k ~= "INIT" then
                 if rawget(class, "INDEX") then return rawget(class, "INDEX")(self, cls, k) end
@@ -83,15 +89,15 @@ return setmetatable({},
             -- Checks if this attribute is handled by the getter
             if getter[k] then return getter[k](self) end
             -- Tries to check if the table has the attribute
-            if rawget(class, k) ~= nil then
-                return rawget(class, k)
+            if rawget(instance, k) ~= nil then
+                return rawget(instance, k)
             end
             return nil
         end
 
-        function class:__newindex(k, v)
-            if rawget(class, "NEWINDEX") then return rawget(class, "NEWINDEX")(self, cls, k) end
-            return rawset(self, k, v)
+        function class.__newindex(instance, k, v)
+            if rawget(instance, "NEWINDEX") then return rawget(instance, "NEWINDEX")(instance, k, v) end
+            return rawset(instance, k, v)
         end
         --[[
         **THE GETTER**
@@ -103,7 +109,6 @@ return setmetatable({},
             end
         This, put simply, transform a call of object:_name() to object.name
         ]]--
-        class.__name = name
         class.__getter = getter
         names[name] = class
         print('------------------------\n')
