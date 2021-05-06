@@ -17,6 +17,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ]]--
+
+-- if you want to use this replace this line with `local logger = {info = print}`
 local logger = require("bin.utils.logs") -- External module 'logger' handles logging errors/infos/warns
 
 local metadata = {}
@@ -27,8 +29,8 @@ string.startswith = function(self, str)
 end
 
 function metadata.__call(class, ...)
-    local instance = setmetatable({}, self)
-    for k, v in pairs(class.__dict) do instance[k] = v end --
+    local instance = setmetatable({CLASS = class}, class)
+    for k, v in pairs(class.__dict) do instance[k] = v end
     if instance.INIT ~= nil then instance:INIT(...) end
     return instance
 end
@@ -98,10 +100,6 @@ return setmetatable({},
         end
 
         function class.__index(instance, k)
-            -- Checks if INDEX exists | if it does have it do the indexing
-            if k ~= "INIT" then
-                if rawget(class, "INDEX") then return rawget(class, "INDEX")(instance, cls, k) end
-            end
             -- Checks if this attribute is handled by the getter
             if getter[k] then return getter[k](instance) end
             -- Checks the instance itself for the attributes
@@ -109,12 +107,6 @@ return setmetatable({},
                 return rawget(instance, k)
             end
             return nil
-        end
-
-        function class.__newindex(instance, k, v)
-            -- Checks if NEWINDEX exists | if it does have it create the index
-            if rawget(instance, "NEWINDEX") then return rawget(instance, "NEWINDEX")(instance, k, v) end
-            return rawset(instance, k, v)
         end
         --[[
         any function added to the getter table will be called when trying to access an attribute
